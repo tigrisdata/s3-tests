@@ -22,15 +22,15 @@ Once you have that file copied and edited, you can run the tests with::
 
 You can specify which directory of tests to run::
 
-	S3TEST_CONF=your.conf tox -- s3tests_boto3/functional
+	S3TEST_CONF=your.conf tox -- s3tests/functional
 
 You can specify which file of tests to run::
 
-	S3TEST_CONF=your.conf tox s3tests_boto3/functional/test_s3.py
+	S3TEST_CONF=your.conf tox -- s3tests/functional/test_s3.py
 
 You can specify which test to run::
 
-	S3TEST_CONF=your.conf tox s3tests_boto3/functional/test_s3.py::test_bucket_list_empty
+	S3TEST_CONF=your.conf tox -- s3tests/functional/test_s3.py::test_bucket_list_empty
 
 Some tests have attributes set based on their current reliability and
 things like AWS not enforcing their spec stricly. You can filter tests
@@ -44,13 +44,13 @@ located in the ``s3test_boto3`` directory.
 
 You can run only the boto3 tests with::
 
-	S3TEST_CONF=your.conf tox -- s3tests_boto3/functional
+	S3TEST_CONF=your.conf tox -- s3tests/functional
 
 ========================
  STS compatibility tests
 ========================
 
-This section contains some basic tests for the AssumeRole, GetSessionToken and AssumeRoleWithWebIdentity API's. The test file is located under ``s3tests_boto3/functional``.
+This section contains some basic tests for the AssumeRole, GetSessionToken and AssumeRoleWithWebIdentity API's. The test file is located under ``s3tests/functional``.
 
 To run the STS tests, the vstart cluster should be started with the following parameter (in addition to any parameters already used with it)::
 
@@ -63,11 +63,11 @@ After the cluster is up the following command should be executed::
 
 You can run only the sts tests (all the three API's) with::
 
-        S3TEST_CONF=your.conf tox s3tests_boto3/functional/test_sts.py
+        S3TEST_CONF=your.conf tox -- s3tests/functional/test_sts.py
 
 You can filter tests based on the attributes. There is a attribute named ``test_of_sts`` to run AssumeRole and GetSessionToken tests and ``webidentity_test`` to run the AssumeRoleWithWebIdentity tests. If you want to execute only ``test_of_sts`` tests you can apply that filter as below::
 
-        S3TEST_CONF=your.conf tox -- -m test_of_sts s3tests_boto3/functional/test_sts.py
+        S3TEST_CONF=your.conf tox -- -m test_of_sts s3tests/functional/test_sts.py
 
 For running ``webidentity_test`` you'll need have Keycloak running.
 
@@ -89,14 +89,32 @@ Adding above capabilities to "iam" user is also taken care by vstart (If Ceph cl
 To run these tests, create configuration file with section "iam" and "s3 alt" refer s3tests.conf.SAMPLE.
 Once you have that configuration file copied and edited, you can run all the tests with::
 
-	S3TEST_CONF=your.conf tox s3tests_boto3/functional/test_iam.py
+	S3TEST_CONF=your.conf tox -- s3tests/functional/test_iam.py
 
 You can also specify specific test to run::
 
-	S3TEST_CONF=your.conf tox s3tests_boto3/functional/test_iam.py::test_put_user_policy
+	S3TEST_CONF=your.conf tox -- s3tests/functional/test_iam.py::test_put_user_policy
 
 Some tests have attributes set such as "fails_on_rgw".
 You can filter tests based on their attributes::
 
-	S3TEST_CONF=your.conf tox -- s3tests_boto3/functional/test_iam.py -m 'not fails_on_rgw'
+	S3TEST_CONF=your.conf tox -- s3tests/functional/test_iam.py -m 'not fails_on_rgw'
 
+========================
+ Bucket logging tests
+========================
+
+Ceph has extensions for the bucket logging S3 API. For the tests to cover these extensions, the following file: `examples/rgw/boto3/service-2.sdk-extras.json` from the Ceph repo,
+should be copied to the: `~/.aws/models/s3/2006-03-01/` directory on the machine where the tests are run.
+If the file is not present, the tests will still run, but the extension tests will be skipped. In this case, the bucket logging object roll time must be decreased manually from its default of
+300 seconds to 5 seconds::
+
+  vstart.sh -o rgw_bucket_logging_object_roll_time=5
+
+Then the tests can be run with::
+
+  S3TEST_CONF=your.conf tox -- -m 'bucket_logging'
+
+To run the only bucket logging tests that do not need extension of rollover time, use::
+
+  S3TEST_CONF=your.conf tox -- -m 'bucket_logging and not fails_without_logging_rollover'

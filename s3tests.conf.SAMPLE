@@ -19,6 +19,14 @@ ssl_verify = False
 ## the prefix to 30 characters long, and avoid collisions
 bucket prefix = yournamehere-{random}-
 
+# all the iam account resources (users, roles, etc) created
+# will start with this name prefix
+iam name prefix = s3-tests-
+
+# all the iam account resources (users, roles, etc) created
+# will start with this path prefix
+iam path prefix = /s3-tests/
+
 [s3 main]
 # main display_name set in vstart.sh
 display_name = M. Tester
@@ -46,6 +54,9 @@ secret_key = h7GhxuBLTrlhVUyxSPUKUV8r/2EI4ngqJxD7iBdBYLhwluN30JaT3Q==
 
 ## Lifecycle debug interval (default: 10)
 #lc_debug_interval = 20
+## Restore debug interval (default: 100)
+#rgw_restore_debug_interval = 60
+#rgw_restore_processor_period = 60
 
 [s3 alt]
 # alt display_name set in vstart.sh
@@ -63,7 +74,8 @@ access_key = NOPQRSTUVWXYZABCDEFG
 secret_key = nopqrstuvwxyzabcdefghijklmnabcdefghijklm
 
 #[s3 cloud]
-## to run the testcases with "cloud_transition" attribute.
+## to run the testcases with "cloud_transition" for transition
+## and "cloud_restore" for restore attribute.
 ## Note: the waiting time may have to tweaked depending on
 ## the I/O latency to the cloud endpoint.
 
@@ -87,8 +99,12 @@ secret_key = nopqrstuvwxyzabcdefghijklmnabcdefghijklm
 
 ## Above configured cloud storage class config options
 # retain_head_object = false
+# allow_read_through = false    # change it to enable read_through
+# read_through_restore_days = 2
 # target_storage_class = Target_SC
 # target_path = cloud-bucket
+# target_by_bucket = false    # when true, each source bucket gets its own target bucket
+# target_by_bucket_prefix = rgwx-${zonegroup}-${storage_class}-${bucket}  # template for per-bucket target names
 
 ## another regular storage class to test multiple transition rules,
 # storage_class = S1
@@ -98,7 +114,7 @@ secret_key = nopqrstuvwxyzabcdefghijklmnabcdefghijklm
 display_name = testx$tenanteduser
 
 # tenant user_id set in vstart.sh
-user_id = 9876543210abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+user_id = testx$9876543210abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
 # tenant AWS secret key set in vstart.sh
 access_key = HIJKLMNOPQRSTUVWXYZA
@@ -108,6 +124,9 @@ secret_key = opqrstuvwxyzabcdefghijklmnopqrstuvwxyzab
 
 # tenant email set in vstart.sh
 email = tenanteduser@example.com
+
+# tenant name
+tenant = testx
 
 #following section needs to be added for all sts-tests
 [iam]
@@ -126,6 +145,22 @@ secret_key = abcdefghijklmnopqrstuvwxyzabcdefghijklmn
 
 #display_name from vstart.sh
 display_name = youruseridhere
+
+# iam account root user for iam_account tests
+[iam root]
+access_key = AAAAAAAAAAAAAAAAAAaa
+secret_key = aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+account_id = RGW11111111111111111
+user_id = RGW11111111111111111
+email = account1@ceph.com
+
+# iam account root user in a different account than [iam root]
+[iam alt root]
+access_key = BBBBBBBBBBBBBBBBBBbb
+secret_key = bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+account_id = RGW22222222222222222
+user_id = RGW22222222222222222
+email = account2@ceph.com
 
 #following section needs to be added when you want to run Assume Role With Webidentity test
 [webidentity]
