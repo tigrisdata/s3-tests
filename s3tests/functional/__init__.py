@@ -136,7 +136,20 @@ bucket cleanup'.format(bucket, delta.total_seconds()))
                     Delete={'Objects': objects, 'Quiet': True},
                     BypassGovernanceRetention=True)
 
-    client.delete_bucket(Bucket=bucket)
+    # DeleteBucket can still see the bucket as non-empty right after the last
+    # delete_objects returns.
+    for attempt in range(5):
+        try:
+            client.delete_bucket(Bucket=bucket)
+            return
+        except ClientError as e:
+            if e.response['Error']['Code'] != 'BucketNotEmpty' or attempt == 4:
+                raise
+            time.sleep(2 ** attempt)
+            for objects in list_versions(client, bucket, batch_size):
+                client.delete_objects(Bucket=bucket,
+                        Delete={'Objects': objects, 'Quiet': True},
+                        BypassGovernanceRetention=True)
 
 def nuke_prefixed_buckets(prefix, client=None):
     if client == None:
