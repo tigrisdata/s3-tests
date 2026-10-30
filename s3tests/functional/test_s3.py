@@ -5950,7 +5950,7 @@ def test_object_copy_versioning_multipart_upload():
     assert content_type == response['ContentType']
 
     # copy to another versioned bucket
-    bucket_name2 = get_new_bucket()
+    bucket_name2 = get_new_snapshot_bucket()
     check_configure_versioning_retry(bucket_name2, "Enabled", "Enabled")
 
     copy_source = {'Bucket': bucket_name, 'Key': key1, 'VersionId': version_id}
