@@ -51,6 +51,7 @@ from . import (
     get_new_bucket,
     get_new_bucket_name,
     get_new_bucket_resource,
+    get_new_snapshot_bucket,
     get_config_is_secure,
     get_config_host,
     get_config_port,
@@ -5740,7 +5741,7 @@ def test_object_copy_key_not_found():
 @pytest.mark.copy
 @pytest.mark.fails_on_dbstore
 def test_object_copy_versioned_bucket():
-    bucket_name = get_new_bucket()
+    bucket_name = get_new_snapshot_bucket()
     client = get_client()
     check_configure_versioning_retry(bucket_name, "Enabled", "Enabled")
     size = 1*5
@@ -5773,7 +5774,7 @@ def test_object_copy_versioned_bucket():
     assert size == response['ContentLength']
 
     # copy to another versioned bucket
-    bucket_name2 = get_new_bucket()
+    bucket_name2 = get_new_snapshot_bucket()
     check_configure_versioning_retry(bucket_name2, "Enabled", "Enabled")
     copy_source = {'Bucket': bucket_name, 'Key': key1, 'VersionId': version_id}
     key4 = 'bar321foo3'
@@ -5805,7 +5806,7 @@ def test_object_copy_versioned_bucket():
 @pytest.mark.copy
 @pytest.mark.fails_on_dbstore
 def test_object_copy_versioned_url_encoding():
-    bucket = get_new_bucket_resource()
+    bucket = get_new_bucket_resource(snapshot=True)
     check_configure_versioning_retry(bucket.name, "Enabled", "Enabled")
     src_key = 'foo?bar'
     src = bucket.put_object(Key=src_key)
@@ -5910,7 +5911,7 @@ def _multipart_upload_checksum(bucket_name, key, size, part_size=5*1024*1024, cl
 @pytest.mark.copy
 @pytest.mark.fails_on_dbstore
 def test_object_copy_versioning_multipart_upload():
-    bucket_name = get_new_bucket()
+    bucket_name = get_new_snapshot_bucket()
     client = get_client()
     check_configure_versioning_retry(bucket_name, "Enabled", "Enabled")
 
@@ -5949,7 +5950,7 @@ def test_object_copy_versioning_multipart_upload():
     assert content_type == response['ContentType']
 
     # copy to another versioned bucket
-    bucket_name2 = get_new_bucket()
+    bucket_name2 = get_new_snapshot_bucket()
     check_configure_versioning_retry(bucket_name2, "Enabled", "Enabled")
 
     copy_source = {'Bucket': bucket_name, 'Key': key1, 'VersionId': version_id}
@@ -6279,12 +6280,10 @@ def check_configure_versioning_retry(bucket_name, status, expected_string):
 @pytest.mark.copy
 @pytest.mark.fails_on_dbstore
 def test_multipart_copy_versioned():
-    src_bucket_name = get_new_bucket()
+    src_bucket_name = get_new_snapshot_bucket()
     dest_bucket_name = get_new_bucket()
 
     dest_key = "mymultipart"
-    check_versioning(src_bucket_name, None)
-
     src_key = 'foo'
     check_configure_versioning_retry(src_bucket_name, "Enabled", "Enabled")
 
@@ -8112,7 +8111,7 @@ def test_versioning_obj_list_marker():
 @pytest.mark.copy
 @pytest.mark.fails_on_dbstore
 def test_versioning_copy_obj_version():
-    bucket_name = get_new_bucket()
+    bucket_name = get_new_snapshot_bucket()
     client = get_client()
 
     check_configure_versioning_retry(bucket_name, "Enabled", "Enabled")

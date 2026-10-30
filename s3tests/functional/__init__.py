@@ -640,7 +640,7 @@ def get_new_bucket_name():
         )
     return name
 
-def get_new_bucket_resource(name=None):
+def get_new_bucket_resource(name=None, snapshot=False):
     """
     Get a bucket that exists and is empty.
 
@@ -653,6 +653,8 @@ def get_new_bucket_resource(name=None):
                         endpoint_url=config.default_endpoint,
                         use_ssl=config.default_is_secure,
                         verify=config.default_ssl_verify)
+    if snapshot:
+        s3.meta.client.meta.events.register('before-call.s3.CreateBucket', _enable_snapshot)
     if name is None:
         name = get_new_bucket_name()
     bucket = s3.Bucket(name)
@@ -673,6 +675,15 @@ def get_new_bucket(client=None, name=None):
 
     client.create_bucket(Bucket=name)
     return name
+
+# Tigris enables versioning only at creation, as a snapshot bucket; PutBucketVersioning cannot enable it later.
+def _enable_snapshot(params, **kwargs):
+    params['headers']['X-Tigris-Enable-Snapshot'] = 'true'
+
+def get_new_snapshot_bucket():
+    client = get_client()
+    client.meta.events.register('before-call.s3.CreateBucket', _enable_snapshot)
+    return get_new_bucket(client)
 
 def get_parameter_name():
     parameter_name=""
