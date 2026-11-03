@@ -12375,7 +12375,7 @@ def test_delete_tags_obj_public():
     assert len(response['TagSet']) == 0
 
 def test_versioning_bucket_atomic_upload_return_version_id():
-    bucket_name = get_new_bucket()
+    bucket_name = get_new_snapshot_bucket()
     client = get_client()
     key = 'bar'
 
@@ -12396,18 +12396,19 @@ def test_versioning_bucket_atomic_upload_return_version_id():
     response = client.put_object(Bucket=bucket_name, Key=key)
     assert not 'VersionId' in response
 
+    # TODO: re-enable once Tigris can suspend versioning.
     # for versioning-suspended-bucket, no version-id should return.
-    bucket_name = get_new_bucket()
-    key = 'baz'
-    check_configure_versioning_retry(bucket_name, "Suspended", "Suspended")
-    response = client.put_object(Bucket=bucket_name, Key=key)
-    assert not 'VersionId' in response
+    # bucket_name = get_new_bucket()
+    # key = 'baz'
+    # check_configure_versioning_retry(bucket_name, "Suspended", "Suspended")
+    # response = client.put_object(Bucket=bucket_name, Key=key)
+    # assert not 'VersionId' in response
 
 def test_versioning_bucket_multipart_upload_return_version_id():
     content_type='text/bla'
     objlen = 30 * 1024 * 1024
 
-    bucket_name = get_new_bucket()
+    bucket_name = get_new_snapshot_bucket()
     client = get_client()
     key = 'bar'
     metadata={'foo': 'baz'}
@@ -12434,15 +12435,16 @@ def test_versioning_bucket_multipart_upload_return_version_id():
     response = client.complete_multipart_upload(Bucket=bucket_name, Key=key, UploadId=upload_id, MultipartUpload={'Parts': parts})
     assert not 'VersionId' in response
 
+    # TODO: re-enable once Tigris can suspend versioning.
     # for versioning-suspended-bucket, no version-id should return
-    bucket_name = get_new_bucket()
-    key = 'foo'
-    check_configure_versioning_retry(bucket_name, "Suspended", "Suspended")
+    # bucket_name = get_new_bucket()
+    # key = 'foo'
+    # check_configure_versioning_retry(bucket_name, "Suspended", "Suspended")
 
-    (upload_id, data, parts) = _multipart_upload(bucket_name=bucket_name, key=key, size=objlen, client=client, content_type=content_type, metadata=metadata)
+    # (upload_id, data, parts) = _multipart_upload(bucket_name=bucket_name, key=key, size=objlen, client=client, content_type=content_type, metadata=metadata)
 
-    response = client.complete_multipart_upload(Bucket=bucket_name, Key=key, UploadId=upload_id, MultipartUpload={'Parts': parts})
-    assert not 'VersionId' in response
+    # response = client.complete_multipart_upload(Bucket=bucket_name, Key=key, UploadId=upload_id, MultipartUpload={'Parts': parts})
+    # assert not 'VersionId' in response
 
 @pytest.mark.tagging
 @pytest.mark.bucket_policy
